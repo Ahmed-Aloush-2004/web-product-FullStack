@@ -1,7 +1,9 @@
 import { Box, Image, Text } from "@chakra-ui/react";
 import React from "react";
 
-function BrandItem() {
+function BrandItem({ data }) {
+  const { image_url, name } = data;
+
   return (
     <Box
       boxShadow="md"
@@ -17,7 +19,7 @@ function BrandItem() {
     >
       <Box w="100%" overflow={"hidden"}>
         <Image
-          src="https://picsum.photos/200/300"
+          src={image_url}
           alt="Brand Item"
           w="100%"
           h="200px"
@@ -28,7 +30,7 @@ function BrandItem() {
         />
       </Box>
       <Text fontSize="xl" fontWeight="bold" my="4">
-        Brand Name
+        {name}
       </Text>
     </Box>
   );

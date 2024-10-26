@@ -19,9 +19,8 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "react-query";
 import toast from "react-hot-toast";
-import { setTokenToLocalStorage } from "../utils/dealWithLocalStorage";
-import { setToken } from "../store/UserSlice";
 import { useDispatch } from "react-redux";
+import useToken from "../hooks/useToken";
 // import { Link } from "react-router-dom";
 
 function SignUpPage() {
@@ -29,6 +28,8 @@ function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [token, setToken] = useToken();
+
   const [userData, setuserData] = useState({
     email: "",
     username: "",
@@ -75,7 +76,7 @@ function SignUpPage() {
           username: "",
           password: "",
         });
-      setTokenToLocalStorage(data.token);
+      setToken(data.token);
       dispatch(setToken(data.token));
       navigate("/");
     },

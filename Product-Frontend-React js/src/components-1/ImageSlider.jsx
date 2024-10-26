@@ -2,6 +2,11 @@ import { Box, Image, Text, IconButton, Spinner, Alert } from "@chakra-ui/react";
 import React from "react";
 import Carousel from "react-multi-carousel";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+const defaultImageObj = {
+  title: "loading",
+  description: "loading",
+  image_url: "https://picsum.photos/200/300",
+};
 
 function ImageSlider({ images = [], isLoading, error }) {
   const responsive = {
@@ -75,10 +80,9 @@ function ImageSlider({ images = [], isLoading, error }) {
         customLeftArrow={<CustomLeftArrow />}
         customRightArrow={<CustomRightArrow />}
       >
-        { images.length > 0 ? (
+        {images?.length > 0 ? (
           images.map((image, index) => (
             <Box key={index} position="relative">
-              {console.log("image", image)}
               <Image
                 src={image.image_url}
                 alt={`Slide ${index}`}
@@ -114,15 +118,41 @@ function ImageSlider({ images = [], isLoading, error }) {
             </Box>
           ))
         ) : (
-          <Image
-            src={`../../public/bc051633-c226-45e6-a92f-6538acc3e7c2.webp`}
-            alt="default"
-            w="100%"
-            h="100%"
-            objectFit="cover"
-            transition="transform 0.4s ease"
-            borderRadius="lg"
-          />
+          <Box position="relative">
+            {console.log("image", defaultImageObj)}
+            <Image
+              src={defaultImageObj.image_url}
+              alt={`Slide `}
+              w="100%"
+              h="100%"
+              objectFit="cover"
+              transition="transform 0.4s ease"
+              borderRadius="lg"
+            />
+            <Box
+              position="absolute"
+              top="75%"
+              left="50%"
+              transform={"translate(-50%, -50%)"}
+              zIndex={2}
+              bgGradient="linear(to-r, blackAlpha.700, transparent)"
+              color="white"
+              p={4}
+              borderRadius="md"
+              maxWidth="100%"
+              transition="opacity 0.3s ease"
+              _hover={{ opacity: 1 }}
+            >
+              <Text
+                fontSize={{ base: "smaller", md: "md", lg: "lg" }}
+                whiteSpace={"nowrap"}
+                fontWeight="bold"
+                color={"white"}
+              >
+                {defaultImageObj?.title}
+              </Text>
+            </Box>
+          </Box>
         )}
       </Carousel>
     </Box>

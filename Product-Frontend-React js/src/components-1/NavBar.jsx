@@ -20,14 +20,14 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdContacts } from "react-icons/io";
 import { MdLocalOffer, MdAdminPanelSettings } from "react-icons/md";
 import { Link } from "react-router-dom";
-import {
-  getTokenFromLocalStorage,
-  removeTokenFromLocalStorage,
-} from "../utils/dealWithLocalStorage";
+
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { loggedOut, setUserInfo } from "../store/UserSlice";
+import { setUserInfo } from "../store/UserSlice";
 import { useQuery } from "react-query";
+import useToken from "../hooks/useToken";
+import useFetchMe from "../hooks/useFetchMe";
+import { handleToggleNavbar } from "../store/StyleSlice";
 const items = [
   { content: "Home", route: "/" },
   { content: "Products", route: "/products" },
@@ -35,33 +35,17 @@ const items = [
   { content: "Contact", route: "/contact" },
 ];
 
-function NavBar({ handleToggleNavbar }) {
+function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { token, user } = useSelector((state) => state.userInfo);
+  const [token, setToken] = useToken();
   const dispatch = useDispatch();
-  const isAdmin = true;
-  const washListNumber = 3;
-
-  const { isLoading, error, data } = useQuery({
-    queryKey: "getUser",
-    queryFn: async () => {
-      const response = await fetch(
-        "https://jsonplaceholder.typicode.com/users/1"
-      );
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Something went wrong");
-      }
-      return data;
-    },
-    onSuccess: (data) => {
-      dispatch(setUserInfo(data));
-    },
-  });
-
+  const { isLoading, error, data: user, refetch } = useFetchMe();
+console.log("this is the user from Navbar",user);
+const {washListLength} = useSelector((state) => state.washList);
+const {cartListLength} = useSelector((state) => state.cartList);
   const handleLogout = () => {
-    dispatch(loggedOut());
+    setToken("");
+    refetch();
     toast.success("You are logged out successfully");
   };
 
@@ -96,7 +80,7 @@ function NavBar({ handleToggleNavbar }) {
           <IconButton
             icon={<GiHamburgerMenu size={30} />}
             display={{ base: "inline-flex", md: "none" }}
-            onClick={handleToggleNavbar}
+            onClick={() => dispatch(handleToggleNavbar())}
             aria-label="Toggle Navigation"
             background="transparent"
             _hover={{ background: "teal.300" }}
@@ -141,21 +125,23 @@ function NavBar({ handleToggleNavbar }) {
               display="flex"
               alignItems="center"
               // gap={{ base: "5", lg: "10" }}
-              gap={token ? { base: "7", lg: "10" } : { base: "5", lg: "7" }} // Adjust gap based on token
+              gap={
+                token !== "" ? { base: "7", lg: "10" } : { base: "5", lg: "7" }
+              } // Adjust gap based on token
               ml={
-                token
+                token !== ""
                   ? { base: "5", lg: "10", xl: "15" }
                   : { base: "3", lg: "5", xl: "7" }
               } // Optionally add margin for spacing
             >
-              {token ? (
+              {token !== "" ? (
                 <Box
                   whiteSpace="nowrap"
                   overflow="hidden"
                   fontSize="md"
                   fontWeight="medium"
                 >
-                  Hello, {user.username || "user"}
+                  Hello, {user?.username || "user"}
                 </Box>
               ) : (
                 <Box
@@ -188,7 +174,7 @@ function NavBar({ handleToggleNavbar }) {
                     padding="2px 8px"
                     borderRadius="50%"
                   >
-                    {washListNumber}
+                    {washListLength}
                   </Box>
                 </Box>
                 <Box position="relative">
@@ -203,12 +189,12 @@ function NavBar({ handleToggleNavbar }) {
                     padding="2px 8px"
                     borderRadius="full"
                   >
-                    {washListNumber}
+                    {cartListLength}
                   </Box>
                 </Box>
               </Box>
               <Box display="flex" alignItems="center" gap={5}>
-                {user && token && (
+                {user && token !== "" && (
                   <Box
                     display="flex"
                     alignItems="center"
@@ -220,7 +206,7 @@ function NavBar({ handleToggleNavbar }) {
                     <Link to="/profile">Profile</Link>
                   </Box>
                 )}
-                {user && token && isAdmin && (
+                {user?.role === "admin" && token !== "" && (
                   <Box
                     fontSize={{ md: "sm", lg: "md", xl: "md" }}
                     fontWeight="medium"
@@ -237,7 +223,7 @@ function NavBar({ handleToggleNavbar }) {
                     </Link>
                   </Box>
                 )}
-                {token && (
+                {token !== "" && (
                   <Button
                     fontSize="md"
                     fontWeight="medium"
@@ -281,7 +267,7 @@ function NavBar({ handleToggleNavbar }) {
                 </Box>
               </Link>
             ))}
-            {token ? (
+            {token !== "" ? (
               <Box>Hello, {user?.username}</Box>
             ) : (
               <Link to="/signup">
@@ -297,14 +283,14 @@ function NavBar({ handleToggleNavbar }) {
                 </Box>
               </Link>
             )}
-            {token && (
+            {token !== "" && (
               <Box>
                 <Link to="/profile">Profile</Link>
                 <Box
                   fontSize={{ base: "sm", lg: "md" }}
                   fontWeight={{ lg: "sm", xl: "medium" }}
                 >
-                  {isAdmin && (
+                  {token !== "" && user?.role === "admin" && (
                     <Link to="/admin/dashboard">Admin Dashboard</Link>
                   )}
                 </Box>

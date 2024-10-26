@@ -22,6 +22,8 @@ import { IoIosArrowDropleftCircle } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { loggedOut } from "../store/UserSlice";
+import { handleToggleNavbar } from "../store/StyleSlice";
+import useFetchMe from "../hooks/useFetchMe";
 
 const items = [
   { content: "Home", route: "/", Icon: FaHome },
@@ -30,25 +32,29 @@ const items = [
   { content: "Contact", route: "/contact", Icon: IoMdContacts },
 ];
 
-const SideBar = ({ isOpen, handleToggleNavbar }) => {
-  let isAdmin = true;
-  let isLoggedIn = true;
-
-const dispatch = useDispatch();
-  const {token,user} = useSelector(state=>state.userInfo)
-
+const SideBar = () => {
+  const [token, setToken] = useState();
+  const { data: user, isLoading, error, refetch } = useFetchMe();
+  console.log("this is the user",user);
+  
+  const dispatch = useDispatch();
+  // const {token,user} = useSelector(state=>state.userInfo)
+  const { isOpen } = useSelector((state) => state.styleResponsive);
   const handleLogout = () => {
-    dispatch(loggedOut());
+    setToken("");
+    dispatch(handleToggleNavbar());
+    // refetch();
     toast.success("You are logged out successfully");
-
   };
-
+function CloseSideBar() {
+  dispatch(handleToggleNavbar())
+}
   return (
     <>
       {/* Overlay for mobile view */}
       {isOpen && (
         <Box
-          onClick={handleToggleNavbar}
+          onClick={CloseSideBar}
           position="fixed"
           top="0"
           left="0"
@@ -60,20 +66,22 @@ const dispatch = useDispatch();
       )}
 
       {/* Hamburger Icon for mobile */}
-    { isOpen &&   <IconButton
-        icon={ <FaX size={23} /> }
-        display={["inline-block"]}
-        onClick={handleToggleNavbar}
-        padding={"5px"}
-        borderRadius={"lg"}
-        position="fixed"
-        top={"10px"}
-        left={"270px"}
-        color={"white"}
-        background={ "transparent"}
-        zIndex="32"
-        size="lg"
-      />}
+      {isOpen && (
+        <IconButton
+          icon={<FaX size={23} />}
+          display={["inline-block"]}
+          onClick={CloseSideBar}
+          padding={"5px"}
+          borderRadius={"lg"}
+          position="fixed"
+          top={"10px"}
+          left={"270px"}
+          color={"white"}
+          background={"transparent"}
+          zIndex="32"
+          size="lg"
+        />
+      )}
 
       {/* Sidebar */}
       <Stack
@@ -98,7 +106,9 @@ const dispatch = useDispatch();
           gap={"10px"}
         >
           <LuUserCircle2 size={30} />
-          <Text fontSize={"large"}>Hello, {token && user ? user.name : "Sign in"}</Text>
+          <Text fontSize={"large"}>
+            Hello, {token !== "" && user ? user?.username : "Sign in"}
+          </Text>
         </Box>
         <Stack
           padding="20px"
@@ -116,7 +126,7 @@ const dispatch = useDispatch();
                 linkContent={item.content}
                 linkRout={item.route}
                 Icon={item.Icon}
-                onClick={handleToggleNavbar}
+                onClick={CloseSideBar}
               />
             ))}
           </Stack>
@@ -127,22 +137,22 @@ const dispatch = useDispatch();
               linkContent={"Wishlist"}
               linkRout={"/wishlist"}
               Icon={FaHeart}
-              onClick={handleToggleNavbar}
+              onClick={CloseSideBar}
             />
             <ItemForNavbar
               linkContent={"Cart"}
               linkRout={"/cart"}
               Icon={FaShoppingCart}
-              onClick={handleToggleNavbar}
+              onClick={CloseSideBar}
             />
 
-            {token && user ? (
+            {token !== "" && user ? (
               <>
                 <ItemForNavbar
                   linkContent={"Profile"}
                   linkRout={"/profile"}
                   Icon={FaUser}
-                  onClick={handleToggleNavbar}
+                  onClick={CloseSideBar}
                 />
 
                 <Button
@@ -168,22 +178,24 @@ const dispatch = useDispatch();
                   linkContent={"Login"}
                   linkRout={"/login"}
                   Icon={FaSignInAlt}
-                  onClick={handleToggleNavbar}
+                  onClick={CloseSideBar}
                 />
                 <ItemForNavbar
                   linkContent={"Signup"}
                   linkRout={"/signup"}
                   Icon={FaUser}
-                  onClick={handleToggleNavbar}
+                  onClick={CloseSideBar}
                 />
               </>
             )}
-            { token && user && isAdmin && (
+            {console.log(user)}
+
+            {token !== "" && user && user?.role === "Admin" && (
               <ItemForNavbar
                 linkContent={"Admin Dashboard"}
                 linkRout={"/admin/dashboard"}
                 Icon={MdAdminPanelSettings}
-                onClick={handleToggleNavbar}
+                onClick={CloseSideBar}
               />
             )}
           </Stack>
@@ -192,7 +204,7 @@ const dispatch = useDispatch();
           color={"white"}
           padding={"10px 30px"}
           cursor={"pointer"}
-          onClick={handleToggleNavbar}
+          onClick={CloseSideBar}
           borderRadius={"50%"}
           width={"30px"}
         >
@@ -204,133 +216,6 @@ const dispatch = useDispatch();
 };
 
 export default SideBar;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { Box, Stack, IconButton, Button, Text } from "@chakra-ui/react";
 // import {
@@ -559,4 +444,3 @@ export default SideBar;
 // //     <FaSearch />
 // //   </InputGroup>
 // // </Box>
-

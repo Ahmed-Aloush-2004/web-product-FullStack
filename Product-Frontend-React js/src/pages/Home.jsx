@@ -10,32 +10,47 @@ import BrandItem from "../components-1/BrandItem";
 import BrandSection from "../components-1/BrandSection";
 import Footer from "../components-1/Footer";
 import { useQuery } from "react-query";
+import useToken from "../hooks/useToken";
+import useFetchBrands from "../hooks/useFetchBrands";
+import useFetchProducts from "../hooks/useFetchProducts";
+import useFetchImageSlider from "../hooks/useFetchImageSlider";
 
 function Home() {
   const [isOpen, setIsOpen] = useState(false);
-
+  const [token, setoTken] = useToken();
   function handleToggleNavbar() {
     setIsOpen(!isOpen);
   }
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: "ImageSlider",
-    queryFn: async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/imageSlider");
-        if (!response.ok) {
-          throw new Error("Failed to fetch products");
-        }
-        return await response.json();
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        throw error;
-      }
-    },
-    // staleTime: 1000 * 60 * 5, // 5 minutes
-    // refetchOnWindowFocus: false,
-    // refetchInterval: 1000 * 60 * 15 // 15 minutes
-  });
+  const {
+    data: imagesSlider,
+    isLoading: LoadingImagesSlider,
+    error: ImagesSliderError,
+  } = useFetchImageSlider();
+
+  const {
+    data: productsOffer,
+    isLoading: productsOfferLoading,
+    error: productsOfferError,
+  } = useFetchProducts({ filterType: "offers"});
+
+  const {
+    data: TheMostSellingproducts,
+    isLoading: TheMostSellingproductsLoading,
+    error: TheMostSellingproductsError,
+  } = useFetchProducts({ filterType: "TheMostSelling"});
+
+  const {
+    data: TheNewestproducts,
+    isLoading: TheNewestproductsLoading,
+    error: TheNewestproductsError,
+  } = useFetchProducts({ filterType: "TheNewest"});
+
+  const {
+    data: brands,
+    isLoading: LoadingBrand,
+    error: BrandError,
+  } = useFetchBrands();
 
   return (
     <Box
@@ -44,7 +59,7 @@ function Home() {
       gap={"50px"}
       background={"teal.50"}
     >
-      <NavBar handleToggleNavbar={handleToggleNavbar} />
+      {/* <NavBar handleToggleNavbar={handleToggleNavbar} /> */}
       <Box
         width="85%"
         mx={"auto"}
@@ -60,22 +75,31 @@ function Home() {
         >
           {"“Spend less, Smile more.”"}
         </Heading>
-        {console.log(data)
-        }
-        <ImageSlider images={data} isLoading={isLoading} error={error} />
+        <ImageSlider
+          images={imagesSlider?.data}
+          isLoading={LoadingImagesSlider}
+          error={ImagesSliderError}
+        />
         <HomeProductCarousel
           title={"New Brand"}
-          products={[...Array(5).map((_, index) => <BrandItem key={index} />)]}
-          isDiscount={false}
+          products={brands}
+          ItemToRender={BrandItem}
         />
         <HomeProductCarousel
           title={"Offers for you"}
-          products={[]}
-          isDiscount={true}
+          products={productsOffer}
+          ItemToRender={HomeProductItem}
         />
         <HomeProductCarousel
           title={"The Most Selling Products"}
-          products={[]}
+          products={TheMostSellingproducts}
+          ItemToRender={HomeProductItem}
+        />
+
+        <HomeProductCarousel
+          title={"The Newest Products.We Add them to Our Store."}
+          products={TheNewestproducts}
+          ItemToRender={HomeProductItem}
         />
         <BrandSection />
       </Box>

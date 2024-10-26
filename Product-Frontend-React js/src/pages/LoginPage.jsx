@@ -20,15 +20,16 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useMutation } from "react-query";
-import { setTokenToLocalStorage } from "../utils/dealWithLocalStorage";
 import { useDispatch } from "react-redux";
-import { setToken } from "../store/UserSlice";
+import useToken from "../hooks/useToken";
 // import { Link } from "react-router-dom";
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [token, setToken] = useToken();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const [userData, setuserData] = useState({
     username: "",
     password: "",
@@ -72,8 +73,8 @@ function LoginPage() {
           username: "",
           password: "",
         });
-      setTokenToLocalStorage(data.token);
-      dispatch(setToken(data.token))
+        setToken(data.token);
+      // dispatch(setToken(data.token))
       navigate("/");
     },
   });

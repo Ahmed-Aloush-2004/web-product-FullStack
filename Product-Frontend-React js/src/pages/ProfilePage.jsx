@@ -34,31 +34,62 @@ import { CircleLoader } from "react-spinners";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserInfo } from "../store/UserSlice";
+import useToken from "../hooks/useToken";
 
 function ProfilePage() {
-  const {user} = useSelector((state) => state.userInfo);
-  const [editedData, setEditedData] = useState(user);
+  const [editedData, setEditedData] = useState({
+    fullname: "",
+    address: "",
+    phonenumber: "",
+    username: "",
+    email: "",
+  });
   const [save, setSave] = useState(false);
-  const dispatch = useDispatch();
-  const { isError, error, isLoading, data, refetch } = useQuery({
+  const [token, setToken] = useToken();
+  const {
+    isError,
+    error,
+    isLoading,
+    data: user,
+    refetch,
+  } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
-      const response = await fetch(
-        "https://jsonplaceholder.typicode.com/users/1"
-      );
+      const response = await fetch("http://localhost:5000/api/auth/me", {
+        method: "GET",
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || "Something went wrong");
       }
+
       return data;
     },
     onSuccess: (data) => {
-      setEditedData(data);
-      console.log("data", data);
-      dispatch(setUserInfo(data));
+      const { fullname, address, phonenumber, username, email } = data;
+
+      // Update the state correctly with the individual properties
+      setEditedData((prevState) => ({
+        ...prevState,
+        fullname,
+        address,
+        phonenumber,
+        username,
+        email,
+      }));
+      console.log("Updated userData", {
+        fullname,
+        address,
+        phonenumber,
+        username,
+        email,
+      });
     },
   });
+
   const {
     mutate,
     isLoading: isUpdateLoading,
@@ -67,13 +98,13 @@ function ProfilePage() {
     mutationKey: ["profile"],
     mutationFn: async (editedData) => {
       const response = await fetch(
-        "https://jsonplaceholder.typicode.com/users/1",
+        "http://localhost:5000/api/auth/editUserProfile",
         {
           method: "PUT",
-          body: JSON.stringify(editedData),
           headers: {
-            "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify(editedData),
         }
       );
       const data = await response.json();
@@ -85,7 +116,7 @@ function ProfilePage() {
     onSuccess: () => {
       toast.success("Profile updated successfully");
       setSave(false);
-      dispatch(setUserInfo(editedData));
+      // dispatch(setUserInfo(editedData));
 
       // refetch();
     },
@@ -100,6 +131,8 @@ function ProfilePage() {
 
   function handleUpdate() {
     if (save) {
+      console.log("these are the data whick i send to the backend", editedData);
+
       mutate(editedData);
     }
   }
@@ -150,8 +183,8 @@ function ProfilePage() {
           <ProfileItem
             LabelContent={"Full Name"}
             RightIcon={FaUser}
-            inputValue={editedData?.name}
-            inputName={"username"}
+            inputValue={editedData?.fullname}
+            inputName={"fullname"}
             handleEditeData={handleEditeData}
           />{" "}
           <ProfileItem
@@ -171,15 +204,15 @@ function ProfilePage() {
           <ProfileItem
             LabelContent={"Address"}
             RightIcon={FaMapLocationDot}
-            inputValue={editedData?.Address || "Damascus ,Damascuse,Syria"}
-            inputName={"Address"}
+            inputValue={editedData?.address}
+            inputName={"address"}
             handleEditeData={handleEditeData}
           />
           <ProfileItem
             LabelContent={"Phone Number"}
             RightIcon={FaPhone}
-            inputValue={editedData?.phone}
-            inputName={"phone"}
+            inputValue={editedData?.phonenumber}
+            inputName={"phonenumber"}
             handleEditeData={handleEditeData}
           />
           {save && (
